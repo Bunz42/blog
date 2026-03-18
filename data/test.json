@@ -1,0 +1,5 @@
+{
+  "title": "Mastering the Sliding Window Pattern",
+  "date": "March 15, 2026",
+  "content": "When I first started tackling array and string problems, I always defaulted to nested loops. It worked, but it was incredibly slow. Then I discovered the sliding window pattern. It's essentially a way to optimize O(n^2) brute force solutions down to O(n) by maintaining a 'window' that expands and contracts as you iterate through the data. It's been a total game changer for optimizing my solutions and thinking more efficiently about contiguous subarrays."
+}
