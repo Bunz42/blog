@@ -1,8 +1,12 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, Response, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from typing import Optional
 import json
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI() # initialize fastapi server
 templates = Jinja2Templates(directory="templates") # tell fastapi where to find HTML files (in templates dir)
@@ -71,15 +75,22 @@ async def read_article(request: Request, article_id: int):
     )
 
 @app.get("/new", response_class=HTMLResponse)
-async def show_new_article_form(request: Request):
+async def show_new_article_form(request: Request, blog_session: Optional[str] = Cookie(None)):
+    if blog_session != "authenticated_admin":
+        return RedirectResponse(url="/login", status_code=303)
+
     return templates.TemplateResponse(request=request, name="new.html", context={"is_edit": False})
 
 @app.post("/new", response_class=RedirectResponse)
 async def publish_article(
     title: str = Form(...),
     date: str = Form(...),
-    content: str = Form(...)
+    content: str = Form(...),
+    blog_session: Optional[str] = Cookie(None)
 ):
+    if blog_session != "authenticated_admin":
+        return RedirectResponse(url="/login", status_code=303)
+
     # figure out the next available id to use for the new article
     existing_ids = []
     if os.path.exists("data"):
@@ -106,7 +117,13 @@ async def publish_article(
     return RedirectResponse("/admin", status_code=303)
 
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_page(request: Request):
+async def admin_page(
+    request: Request, 
+    blog_session: Optional[str] = Cookie(None) # make fastapi look for the authorized cookie session
+):
+    if blog_session != "authenticated_admin":
+        return RedirectResponse(url="/login", status_code=303)
+
     articles_list = []
 
     if os.path.exists("data"):
@@ -131,7 +148,10 @@ async def admin_page(request: Request):
     )
 
 @app.post("/delete/{article_id}", response_class=RedirectResponse)
-async def delete_article(article_id: int):
+async def delete_article(article_id: int, blog_session: Optional[str] = Cookie(None)):
+    if blog_session != "authenticated_admin":
+        return RedirectResponse(url="/login", status_code=303)
+    
     file_path = f"data/{article_id}.json"
 
     # check if the file actually exists
@@ -142,7 +162,10 @@ async def delete_article(article_id: int):
     return RedirectResponse(url="/admin", status_code=303)
 
 @app.get("/edit/{article_id}", response_class=HTMLResponse)
-async def show_article_edit_form(request: Request, article_id: int):
+async def show_article_edit_form(request: Request, article_id: int, blog_session: Optional[str] = Cookie(None)):
+    if blog_session != "authenticated_admin":
+        return RedirectResponse(url="/login", status_code=303)
+    
     file_path = f"data/{article_id}.json"
 
     if not os.path.exists(file_path):
@@ -167,7 +190,11 @@ async def edit_article(
     title: str = Form(...),
     date: str = Form(...),
     content: str = Form(...),
+    blog_session: Optional[str] = Cookie(None)
 ):
+    if blog_session != "authenticated_admin":
+        return RedirectResponse(url="/login", status_code=303)
+
     file_path = f"data/{article_id}.json"
 
     if os.path.exists(file_path):
@@ -181,3 +208,40 @@ async def edit_article(
         json.dump(updated_data, file, indent=4)
     
     return RedirectResponse(url="/admin", status_code=303)
+
+@app.get("/login", response_class=HTMLResponse)
+async def show_login(request: Request):
+    return templates.TemplateResponse(request=request, name="login.html")
+
+@app.post("/login", response_class=RedirectResponse)
+async def login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...)
+):
+
+    correct_username = os.getenv("ADMIN_USERNAME")
+    correct_password = os.getenv("ADMIN_PASSWORD")
+
+    if username == correct_username and password == correct_password: # temporary hard coded passwords
+        # redirect the admin if they get the right username and password
+        response = RedirectResponse(url="/admin", status_code=303)
+
+        # plant a cookie session in the user's browser
+        response.set_cookie(key="blog_session", value="authenticated_admin")
+        return response
+    
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={"error": "Invalid username or password!"}
+    )
+
+@app.get("/logout", response_class=RedirectResponse)
+async def logout():
+    # redirect the admin to the guest page if they logout
+    response = RedirectResponse(url="/home", status_code=303)
+    # delete the admin cookie session
+    response.delete_cookie("blog_session")
+
+    return response
