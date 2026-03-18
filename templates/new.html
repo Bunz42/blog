@@ -9,16 +9,25 @@
 
     <body style="font-family: sans-serif; max-width: 600px; margin: 40px auto;">
         
-        <h1>New Article</h1>
+        <h1>
+            {% if is_edit %}
+                Update Article
+            {% else %}
+                New Article
+            {% endif %}
+        </h1>
+
         <hr>
 
-        <form action="/new" method="POST" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px">
+        <form action="{% if is_edit %}/edit/{{ article.id }}{% else %}/new{% endif %}" method="POST" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px">
             
-            <input type="text" name="title" placeholder="Article Title" required style="padding: 10px; font-size: 16px;">
-            <input type="text" name="date" placeholder="Publishing Date" required style="padding: 10px; font-size: 16px;">
+            <input type="text" name="title" placeholder="Article Title" value="{% if is_edit %}{{ article.title }}{% endif %}" required style="padding: 10px; font-size: 16px;">
+            <input type="text" name="date" placeholder="Publishing Date" value="{% if is_edit %}{{ article.date }}{% endif %}" required style="padding: 10px; font-size: 16px;">
 
-            <textarea name="content" placeholder="Content" rows="10" required style="padding: 10px; font-size: 16px;"></textarea>
-            <button type="submit" style="padding: 10px; font-size: 16px; cursor: pointer; width: 100px;">Publish</button>
+            <textarea name="content" placeholder="Content" rows="10" required style="padding: 10px; font-size: 16px;">{% if is_edit %}{{ article.content }}{% endif %}</textarea>
+            <button type="submit" style="padding: 10px; font-size: 16px; cursor: pointer; width: 100px;">
+                {% if is_edit %}Update{% else %}Publish{% endif %}
+            </button>
 
         </form>
     </body>

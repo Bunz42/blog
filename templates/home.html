@@ -7,7 +7,14 @@
 </head>
 <body style="font-family: sans-serif; max-width: 600px; margin: 40px auto;">
 
-    <h1>Personal Blog</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center ">
+        <h1>Personal Blog</h1>
+    
+        {% if is_admin %}
+            <a href="/new" style="text-decoration: none; color: black; font-weight: bold;">Add +</a>
+        {% endif %}
+    </div>
+
     <hr>
     
     <ul style="list-style-type: none; padding: 0;">
@@ -20,15 +27,26 @@
                     {{ article.title }}
                 </a>
                 
-                <span style="color: gray;">{{ article.date }}</span>
-                
+                {% if is_admin %}
+                    <div style="display:flex; gap: 15px; align-items: center;">
+                        <a href="/edit/{{ article.id }}" style="text-decoration: none; color: #888; font-weight: bold;">Edit</a>
+                        <form action="/delete/{{ article.id }}" method="POST" style="margin: 0;">
+                            <button type="submit" style="background: none; border: none; color: #888; font-weight: bold; cursor: pointer; font-size: 16px; padding: 0;">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                {% else %}
+                    <span style="color: gray;">{{ article.date }}</span>
+                {% endif %}
+
             </li>
             
         {% else %}
-            <p>No articles found. Time to write something!</p>
+            <p>No articles found.</p>
         {% endfor %}
         
     </ul>
-
+    
 </body>
 </html>

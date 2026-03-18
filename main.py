@@ -41,7 +41,10 @@ async def home_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="home.html",
-        context={"articles": articles_list}
+        context={
+            "articles": articles_list,
+            "is_admin": False
+        }
     )
 
 # listen for traffic at routes /article/1, /article/2, etc.
@@ -69,7 +72,7 @@ async def read_article(request: Request, article_id: int):
 
 @app.get("/new", response_class=HTMLResponse)
 async def show_new_article_form(request: Request):
-    return templates.TemplateResponse(request=request, name="new.html")
+    return templates.TemplateResponse(request=request, name="new.html", context={"is_edit": False})
 
 @app.post("/new", response_class=RedirectResponse)
 async def publish_article(
@@ -100,4 +103,81 @@ async def publish_article(
     
     # redirect the admin back to the home page so they can view their new post
     # standard status code for a redirect after a POST form submission is 303
-    return RedirectResponse("/home", status_code=303)
+    return RedirectResponse("/admin", status_code=303)
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    articles_list = []
+
+    if os.path.exists("data"):
+        for filename in os.listdir("data"):
+            if filename.endswith(".json"):
+                article_id = filename.replace(".json", "")
+
+                with open(f'data/{filename}', 'r') as file:
+                    article_data = json.load(file)
+                    article_data["id"] = article_id
+                    articles_list.append(article_data)
+    
+    articles_list.sort(key=lambda x: int(x["id"]), reverse=True)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="home.html",
+        context={
+            "articles": articles_list,
+            "is_admin": True
+        }
+    )
+
+@app.post("/delete/{article_id}", response_class=RedirectResponse)
+async def delete_article(article_id: int):
+    file_path = f"data/{article_id}.json"
+
+    # check if the file actually exists
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    # redirect admin to the admin page: form POST redirect standard code 303
+    return RedirectResponse(url="/admin", status_code=303)
+
+@app.get("/edit/{article_id}", response_class=HTMLResponse)
+async def show_article_edit_form(request: Request, article_id: int):
+    file_path = f"data/{article_id}.json"
+
+    if not os.path.exists(file_path):
+        return HTMLResponse(content="<h1>Article not found</h1>", status_code=404)
+    
+    with open(file_path, 'r') as file:
+        article_data = json.load(file)
+        article_data["id"] = article_id 
+
+    return templates.TemplateResponse(
+        request=request, 
+        name="new.html", 
+        context={
+            "is_edit": True,
+            "article": article_data
+        }
+    )
+
+@app.post("/edit/{article_id}", response_class=RedirectResponse)
+async def edit_article(
+    article_id: int,
+    title: str = Form(...),
+    date: str = Form(...),
+    content: str = Form(...),
+):
+    file_path = f"data/{article_id}.json"
+
+    if os.path.exists(file_path):
+        updated_data = {
+            "title": title,
+            "date": date,
+            "content": content
+        }
+
+    with open (file_path, "w") as file:
+        json.dump(updated_data, file, indent=4)
+    
+    return RedirectResponse(url="/admin", status_code=303)
