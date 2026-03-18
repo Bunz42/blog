@@ -1,55 +1,29 @@
-<!-- Template for home page to display all accessible articles -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Personal Blog</title>
-</head>
-<body style="font-family: sans-serif; max-width: 600px; margin: 40px auto;">
+{% extends "base.html" %}
 
-    <div style="display: flex; justify-content: space-between; align-items: center ">
-        <h1>Personal Blog</h1>
-    
-        {% if is_admin %}
-            <a href="/new" style="text-decoration: none; color: black; font-weight: bold; margin-right: 15px;">+ Add</a>
-            <a href="/logout" style="text-decoration: none; color: black; font-weight: bold;">Logout</a>
-        {% else %}
-            <a href="/login" style="text-decoration: none; color: black; font-weight: bold;">Admin Login</a>
-        {% endif %}
-    </div>
-
-    <hr>
-    
-    <ul style="list-style-type: none; padding: 0;">
-        
+{% block content %}
+    <ul class="clean-list">
         {% for article in articles %}
             
-            <li style="margin-bottom: 15px; display: flex; justify-content: space-between;">
-                
-                <a href="/article/{{ article.id }}" style="text-decoration: none; color: black; font-weight: bold;">
-                    {{ article.title }}
+            <li class="article-row">
+                <a href="/article/{{ article.id }}">
+                    <strong>{{ article.title }}</strong>
                 </a>
                 
                 {% if is_admin %}
-                    <div style="display:flex; gap: 15px; align-items: center;">
-                        <a href="/edit/{{ article.id }}" style="text-decoration: none; color: #888; font-weight: bold;">Edit</a>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="/edit/{{ article.id }}" class="secondary-action">Edit</a>
+                        
                         <form action="/delete/{{ article.id }}" method="POST" style="margin: 0;">
-                            <button type="submit" style="background: none; border: none; color: #888; font-weight: bold; cursor: pointer; font-size: 16px; padding: 0;">
-                                Delete
-                            </button>
+                            <button type="submit" class="secondary-action">Delete</button>
                         </form>
                     </div>
                 {% else %}
                     <span style="color: gray;">{{ article.date }}</span>
                 {% endif %}
-
             </li>
             
         {% else %}
             <p>No articles found.</p>
         {% endfor %}
-        
     </ul>
-    
-</body>
-</html>
+{% endblock %}

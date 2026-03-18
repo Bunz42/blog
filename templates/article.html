@@ -1,20 +1,12 @@
-<!-- Template for single article page -->
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>{{ article.title }}</title>
-    </head>
+{% block content %}
 
-    <body style="font-family: sans-serif; max-width: 600px; margin: 40px auto;">
-        
-        <h1>{{ article.title }}</h1>
-        <p style="color: gray">Published on: {{ article.date }}</p>
+    <h1>{{ article.title }}</h1>
+    <p style="color: gray;">Published on: {{ article.date }}</p>
+    
+    <hr>
+    
+    <p style="white-space: pre-wrap; line-height: 1.6;">{{ article.content }}</p>
 
-        <hr>
-
-        <p>{{ article.content }}</p>
-
-    </body>
-</html>
+{% endblock %}

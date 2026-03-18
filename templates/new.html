@@ -1,34 +1,26 @@
-<!-- Template for the page for article creation by the admin -->
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>New Article</title>
-    </head>
+{% block content %}
+    <h1>
+        {% if is_edit %}
+            Update Article
+        {% else %}
+            New Article
+        {% endif %}
+    </h1>
 
-    <body style="font-family: sans-serif; max-width: 600px; margin: 40px auto;">
+    <hr>
+
+    <form action="{% if is_edit %}/edit/{{ article.id }}{% else %}/new{% endif %}" method="POST" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px">
         
-        <h1>
-            {% if is_edit %}
-                Update Article
-            {% else %}
-                New Article
-            {% endif %}
-        </h1>
+        <input type="text" name="title" placeholder="Article Title" value="{% if is_edit %}{{ article.title }}{% endif %}" required style="padding: 10px; font-size: 16px;">
+        <input type="text" name="date" placeholder="Publishing Date" value="{% if is_edit %}{{ article.date }}{% endif %}" required style="padding: 10px; font-size: 16px;">
 
-        <hr>
+        <textarea name="content" placeholder="Content" rows="10" required style="padding: 10px; font-size: 16px;">{% if is_edit %}{{ article.content }}{% endif %}</textarea>
+        <button type="submit" style="padding: 10px; font-size: 16px; cursor: pointer; width: 100px;">
+            {% if is_edit %}Update{% else %}Publish{% endif %}
+        </button>
 
-        <form action="{% if is_edit %}/edit/{{ article.id }}{% else %}/new{% endif %}" method="POST" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px">
-            
-            <input type="text" name="title" placeholder="Article Title" value="{% if is_edit %}{{ article.title }}{% endif %}" required style="padding: 10px; font-size: 16px;">
-            <input type="text" name="date" placeholder="Publishing Date" value="{% if is_edit %}{{ article.date }}{% endif %}" required style="padding: 10px; font-size: 16px;">
-
-            <textarea name="content" placeholder="Content" rows="10" required style="padding: 10px; font-size: 16px;">{% if is_edit %}{{ article.content }}{% endif %}</textarea>
-            <button type="submit" style="padding: 10px; font-size: 16px; cursor: pointer; width: 100px;">
-                {% if is_edit %}Update{% else %}Publish{% endif %}
-            </button>
-
-        </form>
-    </body>
- </html>
+    </form>
+{% endblock %}
+ 

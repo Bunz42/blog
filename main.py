@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, Form, Response, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from typing import Optional
 import json
 import os
@@ -10,6 +11,8 @@ load_dotenv()
 
 app = FastAPI() # initialize fastapi server
 templates = Jinja2Templates(directory="templates") # tell fastapi where to find HTML files (in templates dir)
+
+app.mount("/static", StaticFiles(directory="static"), name="static") # serve the css file
 
 @app.get("/")
 async def root():

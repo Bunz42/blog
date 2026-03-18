@@ -1,0 +1,110 @@
+/* Import a clean, comic-book style font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+
+/* Base page styling */
+body {
+    font-family: 'Comic Neue', cursive; /* Apply the handwritten font */
+    background-color: #fafafa;          /* Very slight off-white background */
+    color: #222;
+    max-width: 600px;
+    margin: 40px auto;
+    font-size: 20px
+}
+
+/* The thick outer border for the main containers */
+.comic-container {
+    border: 3px solid #222;
+    border-radius: 6px;
+    padding: 25px;
+    background-color: white;
+}
+
+/* Styling for forms: text inputs and textareas */
+input[type="text"], input[type="password"], textarea {
+    font-family: 'Comic Neue', cursive;
+    font-size: 18px;
+    border: 2px solid #222;
+    border-radius: 4px;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box; /* Keeps inputs from stretching past 100% width */
+    margin-bottom: 15px;
+}
+
+/* Focus state so the user knows which box they are typing in */
+input:focus, textarea:focus {
+    outline: none;
+    background-color: #f0f8ff; 
+}
+
+/* The buttons */
+button {
+    font-family: 'Comic Neue', cursive;
+    font-weight: bold;
+    font-size: 18px;
+    color: #222;
+    background-color: white;
+    border: 2px solid #222;
+    border-radius: 6px;
+    padding: 8px 20px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #eee;
+}
+
+/* Secondary Actions (Edit/Delete in your mockup are lighter gray) */
+.secondary-action {
+    color: #aaa;
+    text-decoration: none;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+    font-family: inherit;
+}
+
+.secondary-action:hover {
+    color: #222;
+}
+
+hr {
+    border: 1px solid #222;
+    margin-bottom: 20px;
+}
+
+/* Aligns the header title and navigation links */
+.header-row {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Aligns the article title and the date/edit controls */
+.article-row {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Removes the default bullet points from lists */
+.clean-list {
+    list-style-type: none; 
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: #222;
+    display: inline-block;
+    transition: transform 0.15 ease-in-out;
+}
+
+a:hover {
+    transform: scale(1.05);
+}
