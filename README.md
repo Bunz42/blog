@@ -2,6 +2,13 @@
 
 A blogging tool for my own use built from scratch using Python and FastAPI. 
 
+![Visual 1](visuals/image.png)
+![Visual 2](visuals/image-1.png)
+![Visual 3](visuals/image-2.png)
+![Visual 4](visuals/image-3.png)
+![Visual 5](visuals/image-4.png)
+![Visual 6](visuals/image-5.png)
+
 ## Features
 
 * **Server-Side Rendering (SSR):** Uses Jinja2 templates to inject Python data directly into the HTML.

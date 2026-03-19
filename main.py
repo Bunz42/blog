@@ -56,7 +56,7 @@ async def home_page(request: Request):
 
 # listen for traffic at routes /article/1, /article/2, etc.
 @app.get("/article/{article_id}", response_class=HTMLResponse)
-async def read_article(request: Request, article_id: int):
+async def read_article(request: Request, article_id: int, blog_session: Optional[str] = Cookie(None)):
     
     # construct the file path based on the URL
     file_path = f"data/{article_id}.json"
@@ -65,16 +65,22 @@ async def read_article(request: Request, article_id: int):
     try:
         with open(file_path, "r") as file:
             article_data = json.load(file)
+            article_data["id"] = article_id
             
     except FileNotFoundError:
         # if the file doesn't exist, send a basic 404 error page
         return HTMLResponse(content="<h1>Article not found</h1>", status_code=404)
 
+    user_is_admin = (blog_session == "authenticated_admin")
+
     # merge the data with the HTML template and send it to the browser
     return templates.TemplateResponse(
         request=request, 
         name="article.html", 
-        context={"article": article_data} # 'article' is the variable name used in the HTML
+        context={
+            "article": article_data,
+            "is_admin": user_is_admin
+        } 
     )
 
 @app.get("/new", response_class=HTMLResponse)
@@ -82,7 +88,14 @@ async def show_new_article_form(request: Request, blog_session: Optional[str] = 
     if blog_session != "authenticated_admin":
         return RedirectResponse(url="/login", status_code=303)
 
-    return templates.TemplateResponse(request=request, name="new.html", context={"is_edit": False})
+    return templates.TemplateResponse(
+        request=request, 
+        name="new.html", 
+        context={
+            "is_edit": False,
+            "is_admin": True
+        }
+    )
 
 @app.post("/new", response_class=RedirectResponse)
 async def publish_article(
@@ -183,7 +196,8 @@ async def show_article_edit_form(request: Request, article_id: int, blog_session
         name="new.html", 
         context={
             "is_edit": True,
-            "article": article_data
+            "article": article_data,
+            "is_admin": True
         }
     )
 
