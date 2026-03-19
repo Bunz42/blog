@@ -25,7 +25,7 @@ Follow these steps to get the local server running on your machine.
 
 ### 1. Clone the repository
 ```bash
-git clone [https://github.com/Bunz42/blog.git](https://github.com/Bunz42/blog.git)
+git clone https://github.com/Bunz42/blog.git
 cd blog
 ```
 
