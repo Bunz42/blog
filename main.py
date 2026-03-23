@@ -1,22 +1,32 @@
-from fastapi import FastAPI, Request, Form, Response, Cookie, status, HTTPException, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from typing import Optional
+from fastapi import FastAPI, Cookie, status, HTTPException, Depends
+from pydantic import BaseModel
+from typing import List, Optional
 import json
 import os
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 
 load_dotenv()
-
 app = FastAPI() # initialize fastapi server
-templates = Jinja2Templates(directory="templates") # tell fastapi where to find HTML files (in templates dir)
 
-app.mount("/static", StaticFiles(directory="static"), name="static") # serve the css file
+class BlogPost(BaseModel):
+    title: str
+    content: str
+    category: str
+    tags: List[str]
+
+async def verify_admin(blog_session: Optional[str] = Cookie(None)):
+    if blog_session != "authenticated_admin":
+        raise HTTPException( 
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You must be an admin to perform this action."
+        )
+    
+    return blog_session
 
 @app.get("/")
 async def root():
-    return RedirectResponse(url="/home")
+    return {"message": "Blogging API is online and running."}
 
 @app.get("/home", response_class=HTMLResponse)
 async def home_page(request: Request):
@@ -97,40 +107,33 @@ async def show_new_article_form(request: Request, blog_session: Optional[str] = 
         }
     )
 
-@app.post("/new", response_class=RedirectResponse)
-async def publish_article(
-    title: str = Form(...),
-    date: str = Form(...),
-    content: str = Form(...),
-    blog_session: Optional[str] = Cookie(None)
-):
-    if blog_session != "authenticated_admin":
-        return RedirectResponse(url="/login", status_code=303)
+@app.post("/new", status_code=status.HTTP_201_CREATED)
+async def create_post(post: BlogPost, session: str = Depends(verify_admin)):
 
-    # figure out the next available id to use for the new article
     existing_ids = []
     if os.path.exists("data"):
         for filename in os.listdir("data"):
             if filename.endswith(".json"):
                 existing_ids.append(int(filename.replace(".json", "")))
-    
-    # if there are articles already, add 1 to the max id. If empty, start at id 1
+                
     new_id = max(existing_ids) + 1 if existing_ids else 1
-    
-    # package the article form data into a python dictionary so we can write it to a new JSON file
-    new_article_data = {
-        "title": title,
-        "date": date,
-        "content": content
+    current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    final_post_data = {
+        "id": new_id,
+        "title": post.title,
+        "content": post.content,
+        "category": post.category,
+        "tags": post.tags,
+        "createdAt": current_time,
+        "updatedAt": current_time
     }
 
+    os.makedirs("data", exist_ok=True)
     with open(f"data/{new_id}.json", 'w') as file:
-        # json.dump to convert the python dict into properly formatted JSON
-        json.dump(new_article_data, file, indent=4)
-    
-    # redirect the admin back to the home page so they can view their new post
-    # standard status code for a redirect after a POST form submission is 303
-    return RedirectResponse("/admin", status_code=303)
+        json.dump(final_post_data, file, indent=4)
+
+    return final_post_data
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(
